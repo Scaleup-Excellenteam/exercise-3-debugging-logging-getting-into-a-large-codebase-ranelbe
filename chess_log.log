@@ -1,0 +1,93 @@
+INFO 2023-04-17 00:56:34,499 - Human vs Human
+INFO 2023-04-17 00:56:34,499 - Starting new chess game
+INFO 2023-04-17 00:56:34,848 - White starts first
+INFO 2023-04-17 00:56:38,873 - 
+==================================================
+Board state:
+ wr  wn  wb  wk  wq  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  wp  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ bp  bp  bp  bp  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  bn  br 
+
+INFO 2023-04-17 00:56:39,874 - 
+==================================================
+Board state:
+ wr  wn  wb  wk  wq  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  wp  --  --  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ bp  bp  bp  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  bn  br 
+
+INFO 2023-04-17 00:56:43,674 - 
+==================================================
+Board state:
+ wr  wn  --  wk  wq  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  wp  --  wb  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ bp  bp  bp  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  bn  br 
+
+INFO 2023-04-17 00:56:47,331 - 
+==================================================
+Board state:
+ wr  wn  --  wk  wq  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  wp  --  wb  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  bn 
+ bp  bp  bp  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  --  br 
+
+INFO 2023-04-17 00:56:51,256 - 
+==================================================
+Board state:
+ wr  wn  --  wk  --  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  wq  --  --  --  --  -- 
+ --  --  --  wp  --  wb  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  bn 
+ bp  bp  bp  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  --  br 
+
+INFO 2023-04-17 00:56:52,653 - 
+==================================================
+Board state:
+ wr  wn  --  wk  --  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  wq  --  --  --  --  -- 
+ --  --  --  wp  --  wb  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ bp  bp  bp  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  bn  br 
+
+INFO 2023-04-17 00:56:55,313 - 
+==================================================
+Board state:
+ wr  wn  --  wk  --  wb  wn  wr 
+ wp  wp  wp  --  wp  wp  wp  wp 
+ --  --  --  --  --  --  --  -- 
+ --  --  --  wp  --  wb  --  -- 
+ --  --  --  bp  --  --  --  -- 
+ --  --  --  --  --  --  --  -- 
+ bp  bp  wq  --  bp  bp  bp  bp 
+ br  bn  bb  bk  bq  bb  bn  br 
+
+INFO 2023-04-17 00:56:55,367 - Game over, white won.
+DEBUG 2023-04-17 00:56:55,378 - Total knight moves: 2
+DEBUG 2023-04-17 00:56:55,378 - Total checks: 1
+DEBUG 2023-04-17 00:56:55,378 - Turns survived by white: 4
+DEBUG 2023-04-17 00:56:55,378 - Turns survived by black: 3
+INFO 2023-04-17 00:56:55,378 - End of the chess game

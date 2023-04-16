@@ -38,14 +38,18 @@ class game_state:
         self._en_passant_previous = (-1, -1)
         self.checkmate = False
         self.stalemate = False
-
         self._is_check = False
         self._white_king_location = [0, 3]
         self._black_king_location = [7, 3]
-
-        self.white_king_can_castle = [True, True,
-                                      True]  # Has king not moved, has Rook1(col=0) not moved, has Rook2(col=7) not moved
+        self.white_king_can_castle = [True, True,True]  # Has king not moved, has Rook1(col=0) not moved, has Rook2(col=7) not moved
         self.black_king_can_castle = [True, True, True]
+
+        self.total_knight_moves = 0
+        self.total_checks = 0
+        self._is_eaten_white = False
+        self._is_eaten_black = False
+        self.turns_survived_white = 0
+        self.turns_survived_black = 0
 
         # Initialize White pieces
         white_rook_1 = Rook('r', 0, 0, Player.PLAYER_1)
@@ -174,6 +178,7 @@ class game_state:
                     if can_move:
                         valid_moves.append(move)
                 self._is_check = True
+
             # pinned checks
             elif pinned_pieces and moving_piece.get_name() is not "k":
                 if starting_square not in pinned_pieces:
@@ -189,6 +194,7 @@ class game_state:
                             valid_moves.append(move)
                         self.board[current_row][current_col] = moving_piece
                         self.board[move[0]][move[1]] = temp
+                self._is_check = False
             else:
                 if moving_piece.get_name() is "k":
                     for move in initial_valid_piece_moves:
@@ -203,6 +209,8 @@ class game_state:
                 else:
                     for move in initial_valid_piece_moves:
                         valid_moves.append(move)
+                self._is_check = False
+
             # if not valid_moves:
             #     if self._is_check:
             #         self.checkmate = True
@@ -220,10 +228,10 @@ class game_state:
         all_white_moves = self.get_all_legal_moves(Player.PLAYER_1)
         all_black_moves = self.get_all_legal_moves(Player.PLAYER_2)
         if self._is_check and self.whose_turn() and not all_white_moves:
-            print("white lost")
+            self.total_checks += 1
             return 0
         elif self._is_check and not self.whose_turn() and not all_black_moves:
-            print("black lost")
+            self.total_checks += 1
             return 1
         elif not all_white_moves and not all_black_moves:
             return 2
@@ -307,7 +315,7 @@ class game_state:
         return self._en_passant_previous
 
     # Move a piece
-    def move_piece(self, starting_square, ending_square, is_ai):
+    def move_piece(self, starting_square, ending_square, is_ai, update_stats=False):
         current_square_row = starting_square[0]  # The integer row value of the starting square
         current_square_col = starting_square[1]  # The integer col value of the starting square
         next_square_row = ending_square[0]  # The integer row value of the ending square
@@ -328,6 +336,7 @@ class game_state:
 
             if ending_square in valid_moves:
                 moved_to_piece = self.get_piece(next_square_row, next_square_col)
+
                 if moving_piece.get_name() is "k":
                     if moving_piece.is_player(Player.PLAYER_1):
                         if moved_to_piece == Player.EMPTY and next_square_col == 1 and self.king_can_castle_left(
@@ -464,6 +473,13 @@ class game_state:
                     self.board[next_square_row][next_square_col] = self.board[current_square_row][current_square_col]
                     self.board[current_square_row][current_square_col] = Player.EMPTY
 
+                if update_stats:
+                    if moving_piece.get_name() is 'n':
+                        self.total_knight_moves += 1
+                    if self._is_check:
+                        self.total_checks += 1
+                    self.update_turns_survived(moved_to_piece)
+
                 self.white_turn = not self.white_turn
 
             else:
@@ -550,8 +566,9 @@ class game_state:
                 self._black_king_location = (undoing_move.starting_square_row, undoing_move.starting_square_col)
 
             return undoing_move
+
         else:
-            print("Back to the beginning!")
+            pass
 
     # true if white, false if black
     def whose_turn(self):
@@ -854,7 +871,19 @@ class game_state:
                     # self._is_check = True
                     _checks.append((king_location_row + row_change[i], king_location_col + col_change[i]))
         # print([_checks, _pins, _pins_check])
-        return [_pins_check, _pins, _pins_check]
+
+        return [_checks, _pins, _pins_check]
+
+    def update_turns_survived(self, moved_to_piece):
+        if moved_to_piece != Player.EMPTY:
+            if moved_to_piece.get_player() == Player.PLAYER_1:
+                self._is_eaten_white = True
+            else:
+                self._is_eaten_black = True
+        if self.whose_turn() and not self._is_eaten_white:
+            self.turns_survived_white += 1
+        elif not self.whose_turn() and not self._is_eaten_black:
+            self.turns_survived_black += 1
 
 
 class chess_move():
