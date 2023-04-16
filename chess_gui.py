@@ -7,9 +7,11 @@
 #
 import chess_engine
 import pygame as py
-
 import ai_engine
 from enums import Player
+import logging
+import datetime
+
 
 """Variables"""
 WIDTH = HEIGHT = 512  # width and height of the chess board
@@ -18,6 +20,20 @@ SQ_SIZE = HEIGHT // DIMENSION  # the size of each of the squares in the board
 MAX_FPS = 15  # FPS for animations
 IMAGES = {}  # images for the chess pieces
 colors = [py.Color("white"), py.Color("gray")]
+
+def setup_logger(filename):
+    format = "%(levelname)s %(asctime)s - %(message)s"
+    logging.basicConfig(filename=filename, format=format, level=logging.DEBUG)
+    return logging.getLogger()
+
+def board_state_str(game_state):
+    str_board = ""
+    for row in game_state.board:
+        for piece in row:
+            str_board += ' -- ' if piece == Player.EMPTY \
+            else f" {piece.get_player()[:1]}{piece.get_name()} "
+        str_board += '\n'
+    return str_board
 
 # TODO: AI black has been worked on. Mirror progress for other two modes
 def load_images():
@@ -84,8 +100,9 @@ def highlight_square(screen, game_state, valid_moves, square_selected):
             for move in valid_moves:
                 screen.blit(s, (move[1] * SQ_SIZE, move[0] * SQ_SIZE))
 
-
 def main():
+    logger = setup_logger('chess_log.log')
+
     # Check for the number of players and the color of the AI
     human_player = ""
     while True:
@@ -96,17 +113,23 @@ def main():
                 while True:
                     human_player = input("What color do you want to play (w or b)?\n")
                     if human_player is "w" or human_player is "b":
+                        human = Player.PLAYER_1 if human_player is 'w' else Player.PLAYER_2
+                        computer = Player.PLAYER_2 if human_player is 'w' else Player.PLAYER_1
+                        logger.info(f"Human({human}) vs Computer({computer})")
                         break
                     else:
                         print("Enter w or b.\n")
                 break
             elif int(number_of_players) == 2:
+                logger.info("Human vs Human")
                 number_of_players = 2
                 break
             else:
                 print("Enter 1 or 2.\n")
         except ValueError:
             print("Enter 1 or 2.")
+
+    logger.info("Starting new chess game")
 
     py.init()
     screen = py.display.set_mode((WIDTH, HEIGHT))
@@ -120,12 +143,16 @@ def main():
     game_over = False
 
     ai = ai_engine.chess_ai()
-    game_state = chess_engine.game_state()
     if human_player is 'b':
+        logger.info("Computer starts first")
         ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
-        game_state.move_piece(ai_move[0], ai_move[1], True)
+        game_state.move_piece(ai_move[0], ai_move[1], True, True)
+    elif human_player is 'w':
+        logger.info("Human starts first")
+    else:
+        logger.info("White starts first")
 
-    while running:
+    while running and not game_over:
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
@@ -148,116 +175,61 @@ def main():
                             valid_moves = []
                         else:
                             game_state.move_piece((player_clicks[0][0], player_clicks[0][1]),
-                                                  (player_clicks[1][0], player_clicks[1][1]), False)
+                                                  (player_clicks[1][0], player_clicks[1][1]), False, True)
+                            logger.info(f"\n{'=' * 50}\nBoard state:\n{board_state_str(game_state)}")
                             square_selected = ()
                             player_clicks = []
                             valid_moves = []
 
                             if human_player is 'w':
                                 ai_move = ai.minimax_white(game_state, 3, -100000, 100000, True, Player.PLAYER_2)
-                                game_state.move_piece(ai_move[0], ai_move[1], True)
+                                game_state.move_piece(ai_move[0], ai_move[1], True, True)
+                                logger.info(f"\n{'=' * 50}\nBoard state:\n{board_state_str(game_state)}")
                             elif human_player is 'b':
                                 ai_move = ai.minimax_black(game_state, 3, -100000, 100000, True, Player.PLAYER_1)
-                                game_state.move_piece(ai_move[0], ai_move[1], True)
+                                game_state.move_piece(ai_move[0], ai_move[1], True, True)
+                                logger.info(f"\n{'=' * 50}\nBoard state:\n{board_state_str(game_state)}")
+
                     else:
                         valid_moves = game_state.get_valid_moves((row, col))
                         if valid_moves is None:
                             valid_moves = []
-            elif e.type == py.KEYDOWN:
+
+            elif e.type == py.KEYDOWN and (e.key == py.K_r or e.key == py.K_u):
                 if e.key == py.K_r:
                     game_over = False
                     game_state = chess_engine.game_state()
-                    valid_moves = []
                     square_selected = ()
                     player_clicks = []
                     valid_moves = []
                 elif e.key == py.K_u:
                     game_state.undo_move()
-                    print(len(game_state.move_log))
+                logger.info(f"\n{'=' * 50}\nBoard state:\n{board_state_str(game_state)}")
 
         draw_game_state(screen, game_state, valid_moves, square_selected)
 
         endgame = game_state.checkmate_stalemate_checker()
         if endgame == 0:
             game_over = True
-            draw_text(screen, "Black wins.")
+            draw_text(screen, "Black won.")
+            logger.info("Game over, black won.")
         elif endgame == 1:
             game_over = True
-            draw_text(screen, "White wins.")
+            draw_text(screen, "White won.")
+            logger.info("Game over, white won.")
         elif endgame == 2:
             game_over = True
             draw_text(screen, "Stalemate.")
+            logger.info("Game over, stalemate.")
 
         clock.tick(MAX_FPS)
         py.display.flip()
 
-    # elif human_player is 'w':
-    #     ai = ai_engine.chess_ai()
-    #     game_state = chess_engine.game_state()
-    #     valid_moves = []
-    #     while running:
-    #         for e in py.event.get():
-    #             if e.type == py.QUIT:
-    #                 running = False
-    #             elif e.type == py.MOUSEBUTTONDOWN:
-    #                 if not game_over:
-    #                     location = py.mouse.get_pos()
-    #                     col = location[0] // SQ_SIZE
-    #                     row = location[1] // SQ_SIZE
-    #                     if square_selected == (row, col):
-    #                         square_selected = ()
-    #                         player_clicks = []
-    #                     else:
-    #                         square_selected = (row, col)
-    #                         player_clicks.append(square_selected)
-    #                     if len(player_clicks) == 2:
-    #                         if (player_clicks[1][0], player_clicks[1][1]) not in valid_moves:
-    #                             square_selected = ()
-    #                             player_clicks = []
-    #                             valid_moves = []
-    #                         else:
-    #                             game_state.move_piece((player_clicks[0][0], player_clicks[0][1]),
-    #                                                   (player_clicks[1][0], player_clicks[1][1]), False)
-    #                             square_selected = ()
-    #                             player_clicks = []
-    #                             valid_moves = []
-    #
-    #                             ai_move = ai.minimax(game_state, 3, -100000, 100000, True, Player.PLAYER_2)
-    #                             game_state.move_piece(ai_move[0], ai_move[1], True)
-    #                     else:
-    #                         valid_moves = game_state.get_valid_moves((row, col))
-    #                         if valid_moves is None:
-    #                             valid_moves = []
-    #             elif e.type == py.KEYDOWN:
-    #                 if e.key == py.K_r:
-    #                     game_over = False
-    #                     game_state = chess_engine.game_state()
-    #                     valid_moves = []
-    #                     square_selected = ()
-    #                     player_clicks = []
-    #                     valid_moves = []
-    #                 elif e.key == py.K_u:
-    #                     game_state.undo_move()
-    #                     print(len(game_state.move_log))
-    #         draw_game_state(screen, game_state, valid_moves, square_selected)
-    #
-    #         endgame = game_state.checkmate_stalemate_checker()
-    #         if endgame == 0:
-    #             game_over = True
-    #             draw_text(screen, "Black wins.")
-    #         elif endgame == 1:
-    #             game_over = True
-    #             draw_text(screen, "White wins.")
-    #         elif endgame == 2:
-    #             game_over = True
-    #             draw_text(screen, "Stalemate.")
-    #
-    #         clock.tick(MAX_FPS)
-    #         py.display.flip()
-    #
-    # elif human_player is 'b':
-    #     pass
-
+    logger.debug(f"Total knight moves: {game_state.total_knight_moves}")
+    logger.debug(f"Total checks: {game_state.total_checks}")
+    logger.debug(f"Turns survived by white: {game_state.turns_survived_white}")
+    logger.debug(f"Turns survived by black: {game_state.turns_survived_black}")
+    logger.info("End of the chess game")
 
 def draw_text(screen, text):
     font = py.font.SysFont("Helvitca", 32, True, False)
@@ -265,7 +237,6 @@ def draw_text(screen, text):
     text_location = py.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH / 2 - text_object.get_width() / 2,
                                                       HEIGHT / 2 - text_object.get_height() / 2)
     screen.blit(text_object, text_location)
-
 
 if __name__ == "__main__":
     main()
