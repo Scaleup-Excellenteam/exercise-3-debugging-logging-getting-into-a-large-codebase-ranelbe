@@ -9,6 +9,7 @@ import chess_engine
 import pygame as py
 import ai_engine
 from enums import Player
+from enums import GameStatus
 import logging
 import datetime
 
@@ -209,15 +210,15 @@ def main():
         draw_game_state(screen, game_state, valid_moves, square_selected)
 
         endgame = game_state.checkmate_stalemate_checker()
-        if endgame == 0:
+        if endgame == GameStatus.BLACK_WIN:
             game_over = True
             draw_text(screen, "Black won.")
             logger.info("Game over, black won.")
-        elif endgame == 1:
+        elif endgame == GameStatus.WHITE_WIN:
             game_over = True
             draw_text(screen, "White won.")
             logger.info("Game over, white won.")
-        elif endgame == 2:
+        elif endgame == GameStatus.STALEMATE:
             game_over = True
             draw_text(screen, "Stalemate.")
             logger.info("Game over, stalemate.")
