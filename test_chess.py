@@ -14,7 +14,7 @@ class TestChess(TestCase):
     def empty_board(self):
         """ set up an empty board """
         game_state = chess_engine.game_state()
-        game_state.board = [[Player.EMPTY] * 8] * 8
+        game_state.board = [[Player.EMPTY for _ in range(8)] for _ in range(8)]
         return game_state
 
     # ========================= Unit tests ================================
